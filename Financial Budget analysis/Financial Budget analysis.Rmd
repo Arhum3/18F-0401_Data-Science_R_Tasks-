@@ -1,0 +1,45 @@
+---
+title: "Financial Budget Analysis"
+author: "18F-0401"
+date: '2022-06-09'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r }
+data = read.csv("india_budget_2021.csv")
+```
+
+```{r}
+#preparing data
+new_data = data %>% slice(1,9,12,15,19,24,42,43,44)
+new_data[nrow(new_data) + 1,] = c('OTHERS', 592971.0800000001)
+new_data
+```
+```{r fig.height=7}
+ggplot(data=new_data, aes(x=Department..Ministry, y=`Fund.allotted.in.â.¹crores.`)) +
+  geom_bar(stat="identity", fill = "steelblue", width = 0.5) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+lrow = tail(data, n=1)
+GT = lrow[,2]
+new_data$`Fund.allotted.in.â.¹crores.`
+new_data$fraction = as.numeric(new_data$`Fund.allotted.in.â.¹crores.`) / GT
+new_data$ymax = cumsum(new_data$fraction)
+new_data$ymin = c(0, head(new_data$ymax, n=-1))
+
+ggplot(new_data, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Department..Ministry)) +
+     geom_rect() +
+     coord_polar(theta="y") + xlim(c(2, 4))
+```
